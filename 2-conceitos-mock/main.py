@@ -1,5 +1,7 @@
 from distutils.log import debug
 from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import status
 
 app = FastAPI()
 
@@ -19,17 +21,23 @@ eleicoes = {
     }
 }
 
+
 @app.get("/eleicoes")
 async def get_eleicoes():
     return eleicoes
 
 @app.get("/eleicoes/{id}")
 async def get_eleicoes(id: int):
-    return eleicoes[id]
+    try:
+        return eleicoes[id]
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={"msg": "Candidato não encontrado."})
 
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="info", reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000,
+                log_level="info", reload=True)
