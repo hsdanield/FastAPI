@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import status
 
+from fastapi.responses import JSONResponse
+from fastapi.responses import Response
+
 from models import Candidato
 
 app = FastAPI()
@@ -38,7 +41,7 @@ async def get_candidato(id: int):
         return candidatos[id]
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail={"msg": "Candidato não encontrado."})
+                            detail={"msg": f"Candidato não encontrado. {id}"})
 
 
 @app.post("/candidatos", status_code=status.HTTP_201_CREATED)
@@ -56,12 +59,23 @@ async def put_candidato(id: int, candidato: Candidato):
         candidatos[id] = candidato
         return candidato
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Candidato não encontrado."})
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={"msg": f"Candidato não encontrado. {id}"})
 
+
+@app.delete("/candidatos/{id}")
+async def delete_candidato(id: int):
+    if id in candidatos:
+        del candidatos[id]
+        # return JSONResponse(status_code = status.HTTP_204_NO_CONTENT)
+        return Response(status_code = status.HTTP_204_NO_CONTENT)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={"msg": f"Candidato não encontrado. {id}"})
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host = "127.0.0.1", port = 8000,
-                log_level = "info", reload = True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000,
+                log_level="info", reload=True)
