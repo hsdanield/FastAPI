@@ -1,12 +1,13 @@
 from typing import List, Optional
 
-from distutils.log import debug
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import status
 
 from fastapi.responses import JSONResponse
 from fastapi.responses import Response
+
+from fastapi import Path
 
 from models import Candidato
 
@@ -36,7 +37,9 @@ async def get_candidatos():
 
 
 @app.get("/candidatos/{id}")
-async def get_candidato(id: int):
+# gt=0 :: maior que 0
+# let=3 :: menor que 3
+async def get_candidato(id: int = Path(default=None, title="ID do curso", description="Deve ser 1 ou 2", gt=0, lt=3)):
     try:
         return candidatos[id]
     except KeyError:
@@ -68,7 +71,7 @@ async def delete_candidato(id: int):
     if id in candidatos:
         del candidatos[id]
         # return JSONResponse(status_code = status.HTTP_204_NO_CONTENT)
-        return Response(status_code = status.HTTP_204_NO_CONTENT)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={"msg": f"Candidato não encontrado. {id}"})
