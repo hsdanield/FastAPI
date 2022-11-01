@@ -1,4 +1,5 @@
 from typing import List, Optional
+from xml.dom import INVALID_CHARACTER_ERR
 
 from fastapi import FastAPI
 from fastapi import HTTPException
@@ -8,6 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.responses import Response
 
 from fastapi import Path
+from fastapi import Query
 
 from models import Candidato
 
@@ -75,6 +77,15 @@ async def delete_candidato(id: int):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={"msg": f"Candidato não encontrado. {id}"})
+
+
+@app.get("/calculadora")
+async def calcular(a: int = Query(default=None, gt=5), b: int = Query(default=None, gt=100), c: Optional[int] = None):
+    soma: int = a + b
+    if c:
+        soma += c
+
+    return {"total_votos": soma}
 
 
 if __name__ == "__main__":
