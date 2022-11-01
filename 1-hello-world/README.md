@@ -7,6 +7,6 @@
 # gunicorn
  | Comandos | Description |
 | --- | ----------- |
-| guvicorn main:app| Comandos para executar Servidor|
+| gunicorn main:app| Comandos para executar Servidor|
 | <b>-w [nº_workers]</b> |  Balancaemento de Carga|
 | -k uvicorn.workers.UvicornWorker| Utiliza o uvicorn como worker|
