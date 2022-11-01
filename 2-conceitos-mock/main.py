@@ -1,39 +1,52 @@
+from typing import List, Optional
+
 from distutils.log import debug
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import status
 
+from models import Candidato
+
 app = FastAPI()
 
-eleicoes = {
+candidatos = {
     1: {
-        "titulo": "Lula",
+        "nome": "Lula",
         "cargo": "Presidente",
         "votos": 60345999,
-        "porcentagem_votos": 50.90
+        "porcentagem_votos": 50.90,
     },
 
     2: {
-        "titulo": "Bolsonaro",
+        "nome": "Bolsonaro",
         "cargo": "Presidente",
         "votos": 58206354,
         "porcentagem_votos": 49.10
-    }
+    },
+
 }
 
 
-@app.get("/eleicoes")
-async def get_eleicoes():
-    return eleicoes
+@app.get("/candidatos")
+async def get_candidatos():
+    return candidatos
 
-@app.get("/eleicoes/{id}")
-async def get_eleicoes(id: int):
+
+@app.get("/candidatos/{id}")
+async def get_candidato(id: int):
     try:
-        return eleicoes[id]
+        return candidatos[id]
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={"msg": "Candidato não encontrado."})
 
+
+@app.post("/candidatos", status_code=status.HTTP_201_CREATED)
+async def post_candidato(candidato: Candidato):
+    next_id: int = len(candidatos) + 1
+    del candidato.id
+    candidatos[next_id] = candidato
+    return candidato
 
 
 if __name__ == "__main__":
