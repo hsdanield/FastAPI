@@ -49,8 +49,19 @@ async def post_candidato(candidato: Candidato):
     return candidato
 
 
+@app.put("/candidatos/{id}")
+async def put_candidato(id: int, candidato: Candidato):
+    if id in candidatos:
+        del candidato.id
+        candidatos[id] = candidato
+        return candidato
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Candidato não encontrado."})
+
+
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="127.0.0.1", port=8000,
-                log_level="info", reload=True)
+    uvicorn.run("main:app", host = "127.0.0.1", port = 8000,
+                log_level = "info", reload = True)
