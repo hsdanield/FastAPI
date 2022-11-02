@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, final
+from typing import Any, Dict, List, Optional, final
 
 from fastapi import Depends, FastAPI
 from fastapi import HTTPException
@@ -25,46 +25,44 @@ def simulacao_db():
         sleep(1)
 
 
-app = FastAPI()
+candidatos = [
+    Candidato(id=1, nome="Lula", cargo="Presidente",
+              votos=60345999, porcentagem_votos=50.90),
+    Candidato(id=2, nome="Bolsonaro", cargo="Presidente",
+              votos=60345999, porcentagem_votos=50.90)
+]
 
 
-candidatos = {
-    1: {
-        "nome": "Lula",
-        "cargo": "Presidente",
-        "votos": 60345999,
-        "porcentagem_votos": 50.90,
-    },
-
-    2: {
-        "nome": "Bolsonaro",
-        "cargo": "Presidente",
-        "votos": 58206354,
-        "porcentagem_votos": 49.10
-    },
-
-}
+app = FastAPI(title="Conceitos FastAPI com dados Mocados",
+              version="0.0.1",
+              description="Estudo de conceitos FastAPI com padrão REST com dados mocados utilizando metodos HTTP's (GET, POST, PUT, DELETE)")
 
 
-@app.get("/candidatos")
+@app.get("/candidatos",
+         summary="Retorna os Candidatos",
+         description="Retorna Todos os Candidatos Registrados",
+         response_model=List[Candidato],
+         response_description="Candidatos Encontrados com Sucesso")
 async def get_candidatos(db: Any = Depends(simulacao_db)):
     return candidatos
 
 
-@app.get("/candidatos/{id}")
+@ app.get("/candidatos/{id}")
 # gt=0 :: maior que 0
 # let=3 :: menor que 3
 async def get_candidato(id: int = Path(default=None, title="ID do curso",
-                                       description="Deve ser 1 ou 2", gt=0, lt=3),
+                                       description="Deve ser 1 ou 2", gt=0, lt=4),
                         db: Any = Depends(simulacao_db)):
     try:
-        return candidatos[id]
+        candidato = [
+            candidato for candidato in candidatos if candidato.id == id]
+        return candidato
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={"msg": f"Candidato não encontrado. {id}"})
 
 
-@app.post("/candidatos", status_code=status.HTTP_201_CREATED)
+@ app.post("/candidatos", status_code=status.HTTP_201_CREATED, response_model=Candidato)
 async def post_candidato(candidato: Candidato, db: Any = Depends(simulacao_db)):
     next_id: int = len(candidatos) + 1
     del candidato.id
@@ -72,7 +70,7 @@ async def post_candidato(candidato: Candidato, db: Any = Depends(simulacao_db)):
     return candidato
 
 
-@app.put("/candidatos/{id}")
+@ app.put("/candidatos/{id}")
 async def put_candidato(id: int, candidato: Candidato, db: Any = Depends(simulacao_db)):
     if id in candidatos:
         del candidato.id
@@ -83,7 +81,7 @@ async def put_candidato(id: int, candidato: Candidato, db: Any = Depends(simulac
                             detail={"msg": f"Candidato não encontrado. {id}"})
 
 
-@app.delete("/candidatos/{id}")
+@ app.delete("/candidatos/{id}")
 async def delete_candidato(id: int, db: Any = Depends(simulacao_db)):
     if id in candidatos:
         del candidatos[id]
@@ -94,7 +92,7 @@ async def delete_candidato(id: int, db: Any = Depends(simulacao_db)):
                             detail={"msg": f"Candidato não encontrado. {id}"})
 
 
-@app.get("/calcularVotos")
+@ app.get("/calcularVotos")
 async def calcular(id_1: int = Query(default=1, gt=0),
                    id_2: int = Query(default=2, gt=0),
                    id_3: Optional[int] = Query(default=None, gt=0),
