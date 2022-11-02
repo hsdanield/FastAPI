@@ -26,9 +26,9 @@ def simulacao_db():
 
 
 candidatos = [
-    Candidato(id=1, nome="Lula", cargo="Presidente",
+    Candidato(id=1, nome="Lula Silva", cargo="Presidente",
               votos=60345999, porcentagem_votos=50.90),
-    Candidato(id=2, nome="Bolsonaro", cargo="Presidente",
+    Candidato(id=2, nome="Jair Bolsonaro", cargo="Presidente",
               votos=60345999, porcentagem_votos=50.90)
 ]
 
@@ -65,8 +65,8 @@ async def get_candidato(id: int = Path(default=None, title="ID do curso",
 @ app.post("/candidatos", status_code=status.HTTP_201_CREATED, response_model=Candidato)
 async def post_candidato(candidato: Candidato, db: Any = Depends(simulacao_db)):
     next_id: int = len(candidatos) + 1
-    del candidato.id
-    candidatos[next_id] = candidato
+    candidato.id = next_id
+    candidatos.append(candidato)
     return candidato
 
 
