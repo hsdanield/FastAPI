@@ -1,7 +1,6 @@
-from typing import List, Optional
-from xml.dom import INVALID_CHARACTER_ERR
+from typing import Any, List, Optional, final
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi import HTTPException
 from fastapi import status
 
@@ -12,9 +11,22 @@ from fastapi import Path
 from fastapi import Query
 from fastapi import Header
 
+from time import sleep
+
 from models import Candidato
 
+
+def simulacao_db():
+    try:
+        print("Abrindo conexão com banco de dados")
+        sleep(1)
+    finally:
+        print("Fechando conexão com banco de dados")
+        sleep(1)
+
+
 app = FastAPI()
+
 
 candidatos = {
     1: {
@@ -35,14 +47,16 @@ candidatos = {
 
 
 @app.get("/candidatos")
-async def get_candidatos():
+async def get_candidatos(db: Any = Depends(simulacao_db)):
     return candidatos
 
 
 @app.get("/candidatos/{id}")
 # gt=0 :: maior que 0
 # let=3 :: menor que 3
-async def get_candidato(id: int = Path(default=None, title="ID do curso", description="Deve ser 1 ou 2", gt=0, lt=3)):
+async def get_candidato(id: int = Path(default=None, title="ID do curso",
+                                       description="Deve ser 1 ou 2", gt=0, lt=3),
+                        db: Any = Depends(simulacao_db)):
     try:
         return candidatos[id]
     except KeyError:
@@ -51,7 +65,7 @@ async def get_candidato(id: int = Path(default=None, title="ID do curso", descri
 
 
 @app.post("/candidatos", status_code=status.HTTP_201_CREATED)
-async def post_candidato(candidato: Candidato):
+async def post_candidato(candidato: Candidato, db: Any = Depends(simulacao_db)):
     next_id: int = len(candidatos) + 1
     del candidato.id
     candidatos[next_id] = candidato
@@ -59,7 +73,7 @@ async def post_candidato(candidato: Candidato):
 
 
 @app.put("/candidatos/{id}")
-async def put_candidato(id: int, candidato: Candidato):
+async def put_candidato(id: int, candidato: Candidato, db: Any = Depends(simulacao_db)):
     if id in candidatos:
         del candidato.id
         candidatos[id] = candidato
@@ -70,7 +84,7 @@ async def put_candidato(id: int, candidato: Candidato):
 
 
 @app.delete("/candidatos/{id}")
-async def delete_candidato(id: int):
+async def delete_candidato(id: int, db: Any = Depends(simulacao_db)):
     if id in candidatos:
         del candidatos[id]
         # return JSONResponse(status_code = status.HTTP_204_NO_CONTENT)
@@ -84,7 +98,8 @@ async def delete_candidato(id: int):
 async def calcular(id_1: int = Query(default=1, gt=0),
                    id_2: int = Query(default=2, gt=0),
                    id_3: Optional[int] = Query(default=None, gt=0),
-                   classe: str = Header(default=None)):
+                   classe: str = Header(default=None),
+                   db: Any = Depends(simulacao_db)):
 
     total_votos: int = candidatos[id_1]["votos"] + candidatos[id_2]["votos"]
     if id_3:
