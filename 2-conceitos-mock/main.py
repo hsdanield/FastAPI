@@ -10,6 +10,7 @@ from fastapi.responses import Response
 
 from fastapi import Path
 from fastapi import Query
+from fastapi import Header
 
 from models import Candidato
 
@@ -79,13 +80,19 @@ async def delete_candidato(id: int):
                             detail={"msg": f"Candidato não encontrado. {id}"})
 
 
-@app.get("/calculadora")
-async def calcular(a: int = Query(default=None, gt=5), b: int = Query(default=None, gt=100), c: Optional[int] = None):
-    soma: int = a + b
-    if c:
-        soma += c
+@app.get("/calcularVotos")
+async def calcular(id_1: int = Query(default=1, gt=0),
+                   id_2: int = Query(default=2, gt=0),
+                   id_3: Optional[int] = Query(default=None, gt=0),
+                   classe: str = Header(default=None)):
 
-    return {"total_votos": soma}
+    total_votos: int = candidatos[id_1]["votos"] + candidatos[id_2]["votos"]
+    if id_3:
+        total_votos += id_3
+
+    print(f"classe: {classe}")
+
+    return {"total_votos": total_votos}
 
 
 if __name__ == "__main__":
